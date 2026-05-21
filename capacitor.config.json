@@ -1,7 +1,7 @@
 {
   "appId": "com.kiwufy.notificacoes",
   "appName": "Kiwufy",
-  "webDir": ".",
+  "webDir": "kiwufy",
   "bundledWebRuntime": false,
   "ios": {
     "contentInset": "always",
