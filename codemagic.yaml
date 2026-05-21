@@ -1,6 +1,6 @@
 workflows:
-  ios-kiwufy:
-    name: iOS Build - Kiwufy
+  ios-kiwify:
+    name: iOS Build - Kiwify
     max_build_duration: 60
     environment:
       node: 18
@@ -17,10 +17,12 @@ workflows:
         script: npx cap sync ios
       - name: Configure App Icon
         script: |
-          # Criar diretório do ícone
-          mkdir -p ios/App/App/Assets.xcassets/AppIcon.appiconset
+          echo "Configurando ícone do app..."
           
-          # Copiar o ícone para todos os tamanhos necessários
+          # Remover ícones padrão do Capacitor
+          rm -rf ios/App/App/Assets.xcassets/AppIcon.appiconset/*
+          
+          # Copiar o ícone para todos os tamanhos
           cp kiwufy/iconeki.png ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-20x20@1x.png
           cp kiwufy/iconeki.png ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-20x20@2x.png
           cp kiwufy/iconeki.png ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-20x20@3x.png
@@ -35,131 +37,40 @@ workflows:
           cp kiwufy/iconeki.png ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-76x76@1x.png
           cp kiwufy/iconeki.png ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-76x76@2x.png
           cp kiwufy/iconeki.png ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-83.5x83.5@2x.png
-          cp kiwufy/iconeki.png ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png
+          cp kiwufy/iconeki.png ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
           
           # Criar Contents.json
           cat > ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json << 'EOF'
           {
             "images": [
-              {
-                "size": "20x20",
-                "idiom": "iphone",
-                "filename": "AppIcon-20x20@2x.png",
-                "scale": "2x"
-              },
-              {
-                "size": "20x20",
-                "idiom": "iphone",
-                "filename": "AppIcon-20x20@3x.png",
-                "scale": "3x"
-              },
-              {
-                "size": "29x29",
-                "idiom": "iphone",
-                "filename": "AppIcon-29x29@2x.png",
-                "scale": "2x"
-              },
-              {
-                "size": "29x29",
-                "idiom": "iphone",
-                "filename": "AppIcon-29x29@3x.png",
-                "scale": "3x"
-              },
-              {
-                "size": "40x40",
-                "idiom": "iphone",
-                "filename": "AppIcon-40x40@2x.png",
-                "scale": "2x"
-              },
-              {
-                "size": "40x40",
-                "idiom": "iphone",
-                "filename": "AppIcon-40x40@3x.png",
-                "scale": "3x"
-              },
-              {
-                "size": "60x60",
-                "idiom": "iphone",
-                "filename": "AppIcon-60x60@2x.png",
-                "scale": "2x"
-              },
-              {
-                "size": "60x60",
-                "idiom": "iphone",
-                "filename": "AppIcon-60x60@3x.png",
-                "scale": "3x"
-              },
-              {
-                "size": "20x20",
-                "idiom": "ipad",
-                "filename": "AppIcon-20x20@1x.png",
-                "scale": "1x"
-              },
-              {
-                "size": "20x20",
-                "idiom": "ipad",
-                "filename": "AppIcon-20x20@2x.png",
-                "scale": "2x"
-              },
-              {
-                "size": "29x29",
-                "idiom": "ipad",
-                "filename": "AppIcon-29x29@1x.png",
-                "scale": "1x"
-              },
-              {
-                "size": "29x29",
-                "idiom": "ipad",
-                "filename": "AppIcon-29x29@2x.png",
-                "scale": "2x"
-              },
-              {
-                "size": "40x40",
-                "idiom": "ipad",
-                "filename": "AppIcon-40x40@1x.png",
-                "scale": "1x"
-              },
-              {
-                "size": "40x40",
-                "idiom": "ipad",
-                "filename": "AppIcon-40x40@2x.png",
-                "scale": "2x"
-              },
-              {
-                "size": "76x76",
-                "idiom": "ipad",
-                "filename": "AppIcon-76x76@1x.png",
-                "scale": "1x"
-              },
-              {
-                "size": "76x76",
-                "idiom": "ipad",
-                "filename": "AppIcon-76x76@2x.png",
-                "scale": "2x"
-              },
-              {
-                "size": "83.5x83.5",
-                "idiom": "ipad",
-                "filename": "AppIcon-83.5x83.5@2x.png",
-                "scale": "2x"
-              },
-              {
-                "size": "1024x1024",
-                "idiom": "ios-marketing",
-                "filename": "AppIcon-512@2x.png",
-                "scale": "1x"
-              }
+              {"size":"20x20","idiom":"iphone","filename":"AppIcon-20x20@2x.png","scale":"2x"},
+              {"size":"20x20","idiom":"iphone","filename":"AppIcon-20x20@3x.png","scale":"3x"},
+              {"size":"29x29","idiom":"iphone","filename":"AppIcon-29x29@2x.png","scale":"2x"},
+              {"size":"29x29","idiom":"iphone","filename":"AppIcon-29x29@3x.png","scale":"3x"},
+              {"size":"40x40","idiom":"iphone","filename":"AppIcon-40x40@2x.png","scale":"2x"},
+              {"size":"40x40","idiom":"iphone","filename":"AppIcon-40x40@3x.png","scale":"3x"},
+              {"size":"60x60","idiom":"iphone","filename":"AppIcon-60x60@2x.png","scale":"2x"},
+              {"size":"60x60","idiom":"iphone","filename":"AppIcon-60x60@3x.png","scale":"3x"},
+              {"size":"20x20","idiom":"ipad","filename":"AppIcon-20x20@1x.png","scale":"1x"},
+              {"size":"20x20","idiom":"ipad","filename":"AppIcon-20x20@2x.png","scale":"2x"},
+              {"size":"29x29","idiom":"ipad","filename":"AppIcon-29x29@1x.png","scale":"1x"},
+              {"size":"29x29","idiom":"ipad","filename":"AppIcon-29x29@2x.png","scale":"2x"},
+              {"size":"40x40","idiom":"ipad","filename":"AppIcon-40x40@1x.png","scale":"1x"},
+              {"size":"40x40","idiom":"ipad","filename":"AppIcon-40x40@2x.png","scale":"2x"},
+              {"size":"76x76","idiom":"ipad","filename":"AppIcon-76x76@1x.png","scale":"1x"},
+              {"size":"76x76","idiom":"ipad","filename":"AppIcon-76x76@2x.png","scale":"2x"},
+              {"size":"83.5x83.5","idiom":"ipad","filename":"AppIcon-83.5x83.5@2x.png","scale":"2x"},
+              {"size":"1024x1024","idiom":"ios-marketing","filename":"AppIcon-1024.png","scale":"1x"}
             ],
-            "info": {
-              "version": 1,
-              "author": "xcode"
-            }
+            "info":{"version":1,"author":"xcode"}
           }
           EOF
+          
+          echo "Ícone configurado!"
       - name: Update Info.plist
         script: |
-          /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName Kiwufy" ios/App/App/Info.plist
-          /usr/libexec/PlistBuddy -c "Set :CFBundleName Kiwufy" ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName Kiwify" ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleName Kiwify" ios/App/App/Info.plist
       - name: Build iOS unsigned
         script: |
           xcodebuild \
@@ -180,6 +91,6 @@ workflows:
           cd $CM_BUILD_DIR/App.xcarchive/Products/Applications
           mkdir Payload
           cp -r App.app Payload/
-          zip -r $CM_BUILD_DIR/ipa/Kiwufy.ipa Payload/
+          zip -r $CM_BUILD_DIR/ipa/Kiwify.ipa Payload/
     artifacts:
       - $CM_BUILD_DIR/ipa/*.ipa
