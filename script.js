@@ -21,8 +21,6 @@ const stopManualBtn = document.getElementById('stopManual');
 const quantidadeInput = document.getElementById('quantidadeNotif');
 const intervaloInput = document.getElementById('intervaloSegundos');
 const duracaoInput = document.getElementById('duracaoMinutos');
-const valorAutoInput = document.getElementById('valorAuto');
-const tipoAutoInput = document.getElementById('tipoAuto');
 const statusNotif = document.getElementById('statusNotif');
 const statusManual = document.getElementById('statusManual');
 
@@ -48,37 +46,54 @@ installAppBtn.addEventListener('click', async () => {
     deferredPrompt = null;
 });
 
-// Ativar notificações
+// Ativar notificações usando Capacitor
 enableNotificationsBtn.addEventListener('click', async () => {
-    if (!('Notification' in window)) {
-        alert('Seu navegador não suporta notificações');
-        return;
-    }
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-        enableNotificationsBtn.textContent = '✅ Notificações Ativadas';
-        enableNotificationsBtn.disabled = true;
-        enviarNotificacaoKiwufy('Venda Aprovada!', 'Valor: R$ 0,00');
-    } else {
-        alert('Permissão negada. Ative nas configurações do navegador.');
+    try {
+        if (window.Capacitor) {
+            const { LocalNotifications } = window.Capacitor.Plugins;
+            const permission = await LocalNotifications.requestPermissions();
+            if (permission.display === 'granted') {
+                enableNotificationsBtn.textContent = '✅ Notificações Ativadas';
+                enableNotificationsBtn.disabled = true;
+                await enviarNotificacaoKiwufy('Kiwufy', 'Notificações ativadas!');
+            } else {
+                alert('Permissão negada. Ative nas configurações do iPhone.');
+            }
+        } else {
+            alert('Execute no app instalado para usar notificações.');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao ativar notificações.');
     }
 });
 
-if (Notification.permission === 'granted') {
-    enableNotificationsBtn.textContent = '✅ Notificações Ativadas';
-    enableNotificationsBtn.disabled = true;
+// Verificar permissão ao carregar
+if (window.Capacitor) {
+    const { LocalNotifications } = window.Capacitor.Plugins;
+    LocalNotifications.checkPermissions().then(permission => {
+        if (permission.display === 'granted') {
+            enableNotificationsBtn.textContent = '✅ Notificações Ativadas';
+            enableNotificationsBtn.disabled = true;
+        }
+    });
 }
 
 // Modo Manual
-form.addEventListener('submit', (e) => {
+form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const quantidade = parseInt(document.getElementById('quantidadeManual').value);
 
-    if (Notification.permission !== 'granted') {
-        alert('Ative as notificações primeiro!');
-        return;
+    if (window.Capacitor) {
+        const { LocalNotifications } = window.Capacitor.Plugins;
+        const permission = await LocalNotifications.checkPermissions();
+        if (permission.display !== 'granted') {
+            alert('Ative as notificações primeiro!');
+            return;
+        }
     }
+    
     if (quantidade < 1) {
         alert('Configure valores válidos!');
         return;
@@ -102,7 +117,7 @@ form.addEventListener('submit', (e) => {
                 statusManual.innerHTML = '✅ Todas as vendas foram enviadas!';
                 setTimeout(() => { statusManual.style.display = 'none'; }, 3000);
             }
-        }, i * 1500); // 1.5s entre cada venda (para dar tempo das 2 notificações)
+        }, i * 1500);
     }
 });
 
@@ -123,15 +138,20 @@ function atualizarStatusManual() {
 }
 
 // Modo Automático
-startAutoBtn.addEventListener('click', () => {
+startAutoBtn.addEventListener('click', async () => {
     const quantidade = parseInt(quantidadeInput.value);
     const intervaloSegundos = parseInt(intervaloInput.value);
     const duracaoMinutos = parseInt(duracaoInput.value);
 
-    if (Notification.permission !== 'granted') {
-        alert('Ative as notificações primeiro!');
-        return;
+    if (window.Capacitor) {
+        const { LocalNotifications } = window.Capacitor.Plugins;
+        const permission = await LocalNotifications.checkPermissions();
+        if (permission.display !== 'granted') {
+            alert('Ative as notificações primeiro!');
+            return;
+        }
     }
+    
     if (quantidade < 1 || intervaloSegundos < 1 || duracaoMinutos < 1) {
         alert('Configure valores válidos!');
         return;
@@ -214,7 +234,7 @@ function gerarNotificacao(isManual = false) {
             mostrarNotificacaoNaTela(comprovante);
             atualizarLista();
             enviarNotificacaoKiwufy(notif.titulo, corpo);
-        }, index * 500); // 500ms de delay entre as notificações
+        }, index * 500);
     });
 
     if (isManual) {
@@ -263,29 +283,28 @@ function atualizarLista() {
 
 atualizarLista();
 
-function enviarNotificacaoKiwufy(titulo, corpo) {
-    if (Notification.permission !== 'granted') return;
-
-    const options = {
-        body: corpo,
-        icon: './iconeki.png',
-        badge: './iconeki.png',
-        tag: 'kiwufy-' + Date.now(),
-        requireInteraction: false,
-        silent: false,
-        vibrate: [200, 100, 200],
-        timestamp: Date.now(),
-        data: { url: window.location.href },
-        dir: 'ltr',
-        lang: 'pt-BR'
-    };
-
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.ready.then((registration) => {
-            registration.showNotification(titulo, options);
-        });
-    } else {
-        new Notification(titulo, options);
+async function enviarNotificacaoKiwufy(titulo, corpo) {
+    try {
+        if (window.Capacitor) {
+            const { LocalNotifications } = window.Capacitor.Plugins;
+            const notifId = Date.now() + Math.floor(Math.random() * 1000);
+            await LocalNotifications.schedule({
+                notifications: [
+                    {
+                        title: '🍉 ' + titulo,
+                        body: corpo,
+                        id: notifId,
+                        schedule: { at: new Date(Date.now() + 100) },
+                        sound: 'default',
+                        attachments: null,
+                        actionTypeId: '',
+                        extra: null
+                    }
+                ]
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao enviar notificação:', error);
     }
 }
 
