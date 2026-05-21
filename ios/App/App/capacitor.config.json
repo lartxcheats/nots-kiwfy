@@ -1,0 +1,13 @@
+{
+	"appId": "com.fake.notificacoes",
+	"appName": "Mercado Pago",
+	"webDir": "www",
+	"bundledWebRuntime": false,
+	"ios": {
+		"contentInset": "always",
+		"allowsLinkPreview": false
+	},
+	"server": {
+		"androidScheme": "https"
+	}
+}
