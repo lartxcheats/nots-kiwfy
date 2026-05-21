@@ -10,6 +10,63 @@ let notificacoesTotalManual = 0;
 // Valores dos cursos da Kiwify
 const valoresCursos = [52.02, 30.18];
 
+// Detecta se está rodando no Capacitor (app nativo)
+const isCapacitor = window.Capacitor !== undefined;
+let LocalNotifications = null;
+
+// Inicializa o plugin quando o Capacitor estiver pronto
+if (isCapacitor) {
+    LocalNotifications = window.Capacitor.Plugins.LocalNotifications;
+}
+
+async function inicializarNotificacoes() {
+    if (isCapacitor && LocalNotifications) {
+        try {
+            const perm = await LocalNotifications.requestPermissions();
+            return perm.display === 'granted';
+        } catch(e) {
+            console.log('Erro permissao:', e);
+            return false;
+        }
+    } else {
+        if (!('Notification' in window)) return false;
+        const perm = await Notification.requestPermission();
+        return perm === 'granted';
+    }
+}
+
+async function enviarNotificacaoNativa(titulo, corpo) {
+    if (isCapacitor && LocalNotifications) {
+        try {
+            await LocalNotifications.schedule({
+                notifications: [{
+                    title: titulo,
+                    body: corpo,
+                    id: Math.floor(Math.random() * 2000000000),
+                    schedule: { at: new Date(Date.now() + 100) },
+                    sound: null,
+                    attachments: null,
+                    actionTypeId: '',
+                    extra: null
+                }]
+            });
+        } catch(e) {
+            console.log('Erro notificacao:', e);
+        }
+    } else if ('Notification' in window && Notification.permission === 'granted') {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            const reg = await navigator.serviceWorker.ready;
+            reg.showNotification(titulo, {
+                body: corpo,
+                icon: './iconeki.png',
+                tag: 'kiwufy-' + Date.now()
+            });
+        } else {
+            new Notification(titulo, { body: corpo, icon: './iconeki.png' });
+        }
+    }
+}
+
 const form = document.getElementById('comprovanteForm');
 const notificationArea = document.getElementById('notificationArea');
 const comprovantesList = document.getElementById('comprovantesList');
@@ -21,8 +78,6 @@ const stopManualBtn = document.getElementById('stopManual');
 const quantidadeInput = document.getElementById('quantidadeNotif');
 const intervaloInput = document.getElementById('intervaloSegundos');
 const duracaoInput = document.getElementById('duracaoMinutos');
-const valorAutoInput = document.getElementById('valorAuto');
-const tipoAutoInput = document.getElementById('tipoAuto');
 const statusNotif = document.getElementById('statusNotif');
 const statusManual = document.getElementById('statusManual');
 
@@ -50,21 +105,18 @@ installAppBtn.addEventListener('click', async () => {
 
 // Ativar notificações
 enableNotificationsBtn.addEventListener('click', async () => {
-    if (!('Notification' in window)) {
-        alert('Seu navegador não suporta notificações');
-        return;
-    }
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
+    const granted = await inicializarNotificacoes();
+    if (granted) {
         enableNotificationsBtn.textContent = '✅ Notificações Ativadas';
         enableNotificationsBtn.disabled = true;
-        enviarNotificacaoKiwufy('Venda Aprovada!', 'Valor: R$ 0,00');
+        enviarNotificacaoNativa('Kiwufy', 'Notificações ativadas com sucesso!');
     } else {
-        alert('Permissão negada. Ative nas configurações do navegador.');
+        alert('Permissão negada. Ative nas configurações do iPhone.');
     }
 });
 
-if (Notification.permission === 'granted') {
+// Verificar se já tem permissão
+if (!isCapacitor && 'Notification' in window && Notification.permission === 'granted') {
     enableNotificationsBtn.textContent = '✅ Notificações Ativadas';
     enableNotificationsBtn.disabled = true;
 }
@@ -75,7 +127,7 @@ form.addEventListener('submit', (e) => {
 
     const quantidade = parseInt(document.getElementById('quantidadeManual').value);
 
-    if (Notification.permission !== 'granted') {
+    if (!notificacoesAtivas()) {
         alert('Ative as notificações primeiro!');
         return;
     }
@@ -102,7 +154,7 @@ form.addEventListener('submit', (e) => {
                 statusManual.innerHTML = '✅ Todas as vendas foram enviadas!';
                 setTimeout(() => { statusManual.style.display = 'none'; }, 3000);
             }
-        }, i * 1500); // 1.5s entre cada venda (para dar tempo das 2 notificações)
+        }, i * 1500);
     }
 });
 
@@ -128,7 +180,7 @@ startAutoBtn.addEventListener('click', () => {
     const intervaloSegundos = parseInt(intervaloInput.value);
     const duracaoMinutos = parseInt(duracaoInput.value);
 
-    if (Notification.permission !== 'granted') {
+    if (!notificacoesAtivas()) {
         alert('Ative as notificações primeiro!');
         return;
     }
@@ -214,7 +266,7 @@ function gerarNotificacao(isManual = false) {
             mostrarNotificacaoNaTela(comprovante);
             atualizarLista();
             enviarNotificacaoKiwufy(notif.titulo, corpo);
-        }, index * 500); // 500ms de delay entre as notificações
+        }, index * 500);
     });
 
     if (isManual) {
@@ -264,29 +316,11 @@ function atualizarLista() {
 atualizarLista();
 
 function enviarNotificacaoKiwufy(titulo, corpo) {
-    if (Notification.permission !== 'granted') return;
+    enviarNotificacaoNativa(titulo, corpo);
+}
 
-    const options = {
-        body: corpo,
-        icon: './iconeki.png',
-        badge: './iconeki.png',
-        tag: 'kiwufy-' + Date.now(),
-        requireInteraction: false,
-        silent: false,
-        vibrate: [200, 100, 200],
-        timestamp: Date.now(),
-        data: { url: window.location.href },
-        dir: 'ltr',
-        lang: 'pt-BR'
-    };
-
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.ready.then((registration) => {
-            registration.showNotification(titulo, options);
-        });
-    } else {
-        new Notification(titulo, options);
-    }
+function notificacoesAtivas() {
+    return isCapacitor || ('Notification' in window && Notification.permission === 'granted');
 }
 
 // Link do Instagram
