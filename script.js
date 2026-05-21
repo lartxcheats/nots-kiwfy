@@ -10,6 +10,63 @@ let notificacoesTotalManual = 0;
 // Valores dos cursos da Kiwify
 const valoresCursos = [52.02, 30.18];
 
+// Detecta se está rodando no Capacitor (app nativo)
+const isCapacitor = window.Capacitor !== undefined;
+let LocalNotifications = null;
+
+// Inicializa o plugin quando o Capacitor estiver pronto
+if (isCapacitor) {
+    LocalNotifications = window.Capacitor.Plugins.LocalNotifications;
+}
+
+async function inicializarNotificacoes() {
+    if (isCapacitor && LocalNotifications) {
+        try {
+            const perm = await LocalNotifications.requestPermissions();
+            return perm.display === 'granted';
+        } catch(e) {
+            console.log('Erro permissao:', e);
+            return false;
+        }
+    } else {
+        if (!('Notification' in window)) return false;
+        const perm = await Notification.requestPermission();
+        return perm === 'granted';
+    }
+}
+
+async function enviarNotificacaoNativa(titulo, corpo) {
+    if (isCapacitor && LocalNotifications) {
+        try {
+            await LocalNotifications.schedule({
+                notifications: [{
+                    title: titulo,
+                    body: corpo,
+                    id: Math.floor(Math.random() * 2000000000),
+                    schedule: { at: new Date(Date.now() + 100) },
+                    sound: null,
+                    attachments: null,
+                    actionTypeId: '',
+                    extra: null
+                }]
+            });
+        } catch(e) {
+            console.log('Erro notificacao:', e);
+        }
+    } else if ('Notification' in window && Notification.permission === 'granted') {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            const reg = await navigator.serviceWorker.ready;
+            reg.showNotification(titulo, {
+                body: corpo,
+                icon: './iconeki.png',
+                tag: 'kiwufy-' + Date.now()
+            });
+        } else {
+            new Notification(titulo, { body: corpo, icon: './iconeki.png' });
+        }
+    }
+}
+
 const form = document.getElementById('comprovanteForm');
 const notificationArea = document.getElementById('notificationArea');
 const comprovantesList = document.getElementById('comprovantesList');
@@ -46,54 +103,34 @@ installAppBtn.addEventListener('click', async () => {
     deferredPrompt = null;
 });
 
-// Ativar notificações usando Capacitor
+// Ativar notificações
 enableNotificationsBtn.addEventListener('click', async () => {
-    try {
-        if (window.Capacitor) {
-            const { LocalNotifications } = window.Capacitor.Plugins;
-            const permission = await LocalNotifications.requestPermissions();
-            if (permission.display === 'granted') {
-                enableNotificationsBtn.textContent = '✅ Notificações Ativadas';
-                enableNotificationsBtn.disabled = true;
-                await enviarNotificacaoKiwufy('Kiwufy', 'Notificações ativadas!');
-            } else {
-                alert('Permissão negada. Ative nas configurações do iPhone.');
-            }
-        } else {
-            alert('Execute no app instalado para usar notificações.');
-        }
-    } catch (error) {
-        console.error('Erro:', error);
-        alert('Erro ao ativar notificações.');
+    const granted = await inicializarNotificacoes();
+    if (granted) {
+        enableNotificationsBtn.textContent = '✅ Notificações Ativadas';
+        enableNotificationsBtn.disabled = true;
+        enviarNotificacaoNativa('Kiwufy', 'Notificações ativadas com sucesso!');
+    } else {
+        alert('Permissão negada. Ative nas configurações do iPhone.');
     }
 });
 
-// Verificar permissão ao carregar
-if (window.Capacitor) {
-    const { LocalNotifications } = window.Capacitor.Plugins;
-    LocalNotifications.checkPermissions().then(permission => {
-        if (permission.display === 'granted') {
-            enableNotificationsBtn.textContent = '✅ Notificações Ativadas';
-            enableNotificationsBtn.disabled = true;
-        }
-    });
+// Verificar se já tem permissão
+if (!isCapacitor && 'Notification' in window && Notification.permission === 'granted') {
+    enableNotificationsBtn.textContent = '✅ Notificações Ativadas';
+    enableNotificationsBtn.disabled = true;
 }
 
 // Modo Manual
-form.addEventListener('submit', async (e) => {
+form.addEventListener('submit', (e) => {
     e.preventDefault();
 
     const quantidade = parseInt(document.getElementById('quantidadeManual').value);
 
-    if (window.Capacitor) {
-        const { LocalNotifications } = window.Capacitor.Plugins;
-        const permission = await LocalNotifications.checkPermissions();
-        if (permission.display !== 'granted') {
-            alert('Ative as notificações primeiro!');
-            return;
-        }
+    if (!notificacoesAtivas()) {
+        alert('Ative as notificações primeiro!');
+        return;
     }
-    
     if (quantidade < 1) {
         alert('Configure valores válidos!');
         return;
@@ -138,20 +175,15 @@ function atualizarStatusManual() {
 }
 
 // Modo Automático
-startAutoBtn.addEventListener('click', async () => {
+startAutoBtn.addEventListener('click', () => {
     const quantidade = parseInt(quantidadeInput.value);
     const intervaloSegundos = parseInt(intervaloInput.value);
     const duracaoMinutos = parseInt(duracaoInput.value);
 
-    if (window.Capacitor) {
-        const { LocalNotifications } = window.Capacitor.Plugins;
-        const permission = await LocalNotifications.checkPermissions();
-        if (permission.display !== 'granted') {
-            alert('Ative as notificações primeiro!');
-            return;
-        }
+    if (!notificacoesAtivas()) {
+        alert('Ative as notificações primeiro!');
+        return;
     }
-    
     if (quantidade < 1 || intervaloSegundos < 1 || duracaoMinutos < 1) {
         alert('Configure valores válidos!');
         return;
@@ -283,29 +315,12 @@ function atualizarLista() {
 
 atualizarLista();
 
-async function enviarNotificacaoKiwufy(titulo, corpo) {
-    try {
-        if (window.Capacitor) {
-            const { LocalNotifications } = window.Capacitor.Plugins;
-            const notifId = Date.now() + Math.floor(Math.random() * 1000);
-            await LocalNotifications.schedule({
-                notifications: [
-                    {
-                        title: '🍉 ' + titulo,
-                        body: corpo,
-                        id: notifId,
-                        schedule: { at: new Date(Date.now() + 100) },
-                        sound: 'default',
-                        attachments: null,
-                        actionTypeId: '',
-                        extra: null
-                    }
-                ]
-            });
-        }
-    } catch (error) {
-        console.error('Erro ao enviar notificação:', error);
-    }
+function enviarNotificacaoKiwufy(titulo, corpo) {
+    enviarNotificacaoNativa(titulo, corpo);
+}
+
+function notificacoesAtivas() {
+    return isCapacitor || ('Notification' in window && Notification.permission === 'granted');
 }
 
 // Link do Instagram
