@@ -9,8 +9,16 @@ workflows:
     scripts:
       - name: Install dependencies
         script: npm install --legacy-peer-deps
+      - name: Remove old iOS folder
+        script: rm -rf ios
+      - name: Add iOS platform
+        script: npx cap add ios
       - name: Capacitor sync
         script: npx cap sync ios
+      - name: Update Info.plist
+        script: |
+          /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName Kiwufy" ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleName Kiwufy" ios/App/App/Info.plist
       - name: Build iOS unsigned
         script: |
           xcodebuild \
