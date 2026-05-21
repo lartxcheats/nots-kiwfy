@@ -58,8 +58,8 @@ workflows:
           echo "Ícone configurado!"
       - name: Update Info.plist
         script: |
-          /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName Kiwify" ios/App/App/Info.plist
-          /usr/libexec/PlistBuddy -c "Set :CFBundleName Kiwify" ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName Kiwify Cursos" ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c "Set :CFBundleName Kiwify Cursos" ios/App/App/Info.plist
       - name: Build iOS unsigned
         script: |
           xcodebuild \
