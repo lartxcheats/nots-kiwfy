@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kiwify">
+    <meta name="theme-color" content="#1a6b2e">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./iconeki.png">
+    <title>Notificações Kiwify</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Kiwufy</h1>
+            <p>Suas vendas</p>
+        </header>
+
+        <div class="notification-area" id="notificationArea">
+            <p class="empty-state">Nenhuma notificação ainda</p>
+        </div>
+
+        <div class="notification-controls">
+            <button id="enableNotifications" class="btn-primary">🔔 Ativar Notificações</button>
+            <button id="installApp" class="btn-secondary" style="display:none;">📱 Instalar App</button>
+        </div>
+
+        <div class="form-section">
+            <h2>🎯 Modo Manual</h2>
+            <p class="section-description">Envie notificações de venda instantâneas. Cada venda gera 2 notificações: Pix Gerado + Venda Aprovada.<br>Valores: R$ 52,02 ou R$ 30,18 (aleatório)</p>
+            <form id="comprovanteForm">
+                <label>
+                    Quantas vendas:
+                    <input type="number" id="quantidadeManual" value="1" min="1" max="1000" required>
+                </label>
+                <div class="button-group">
+                    <button type="submit" class="btn-manual">▶️ Iniciar Manual</button>
+                    <button type="button" id="stopManual" class="btn-danger" style="display:none;">⏹️ Parar</button>
+                </div>
+                <div id="statusManual" class="status-box" style="display:none;"></div>
+            </form>
+        </div>
+
+        <div class="auto-notification-section">
+            <h2>⚡ Modo Automático</h2>
+            <p class="section-description">Notificações contínuas com intervalo programado. Cada venda gera 2 notificações: Pix Gerado + Venda Aprovada.<br>Valores: R$ 52,02 ou R$ 30,18 (aleatório)</p>
+            <div class="controls">
+                <label>
+                    Quantas vendas:
+                    <input type="number" id="quantidadeNotif" value="10" min="1" max="1000">
+                </label>
+                <label>
+                    Intervalo entre vendas (segundos):
+                    <input type="number" id="intervaloSegundos" value="5" min="1" max="60">
+                </label>
+                <label>
+                    Durante quanto tempo (minutos):
+                    <input type="number" id="duracaoMinutos" value="5" min="1" max="120">
+                </label>
+                <div class="button-group">
+                    <button id="startAuto" class="btn-success">▶️ Iniciar Automático</button>
+                    <button id="stopAuto" class="btn-danger" style="display:none;">⏹️ Parar</button>
+                </div>
+                <div id="statusNotif" class="status-box" style="display:none;"></div>
+            </div>
+        </div>
+
+        <div class="comprovantes-list">
+            <h2>Histórico de Notificações</h2>
+            <div id="comprovantesList"></div>
+        </div>
+
+        <footer class="footer">
+            <a href="https://www.instagram.com/guhhh_44?igsh=d3FzMmRkbDM3eTRo&utm_source=qr" target="_blank" rel="noopener noreferrer" class="instagram-link">
+                Feito por @guhhh_44
+            </a>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
