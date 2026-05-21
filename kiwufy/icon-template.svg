@@ -1,0 +1,23 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fundo verde Kiwify -->
+  <rect width="512" height="512" fill="#1a6b2e" rx="80"/>
+  
+  <!-- Círculo interno mais claro -->
+  <circle cx="256" cy="256" r="180" fill="#2ecc71" opacity="0.3"/>
+  
+  <!-- Melancia estilizada (Kiwi) -->
+  <circle cx="256" cy="256" r="140" fill="#ff6b6b"/>
+  <circle cx="256" cy="256" r="120" fill="#ff8787"/>
+  <circle cx="256" cy="256" r="100" fill="#ffa5a5"/>
+  
+  <!-- Sementes -->
+  <ellipse cx="220" cy="230" rx="8" ry="12" fill="#2d3436"/>
+  <ellipse cx="260" cy="220" rx="8" ry="12" fill="#2d3436"/>
+  <ellipse cx="290" cy="250" rx="8" ry="12" fill="#2d3436"/>
+  <ellipse cx="240" cy="270" rx="8" ry="12" fill="#2d3436"/>
+  <ellipse cx="280" cy="280" rx="8" ry="12" fill="#2d3436"/>
+  <ellipse cx="220" cy="280" rx="8" ry="12" fill="#2d3436"/>
+  
+  <!-- Texto K -->
+  <text x="256" y="360" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="white" text-anchor="middle">K</text>
+</svg>
