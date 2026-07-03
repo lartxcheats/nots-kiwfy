@@ -103,7 +103,7 @@ workflows:
         script: npx cap sync android
       - name: Update app name
         script: |
-          sed -i 's|app_name">.*<|app_name">Kiwify Cursos<|' android/app/src/main/res/values/strings.xml
+          sed -i '' 's|<string name="app_name">.*</string>|<string name="app_name">Kiwify Cursos</string>|' android/app/src/main/res/values/strings.xml
       - name: Copy icon
         script: |
           for size in xxxhdpi xxhdpi xhdpi hdpi mdpi; do
