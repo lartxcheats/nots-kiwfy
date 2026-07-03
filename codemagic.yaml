@@ -94,7 +94,7 @@ workflows:
       - name: Install dependencies
         script: npm install --legacy-peer-deps
       - name: Install Capacitor Android
-        script: npm install @capacitor/android --legacy-peer-deps
+        script: npm install @capacitor/android@5.7.0 --legacy-peer-deps
       - name: Remove old Android folder
         script: rm -rf android
       - name: Add Android platform
@@ -113,9 +113,12 @@ workflows:
           done
       - name: Build APK
         script: |
-          # Limpar cache corrompido do Gradle
+          # Corrigir o build.gradle do capacitor-android
+          find android -name "build.gradle" | xargs grep -l "flatDir" | while read f; do
+            sed -i '' '/flatDir/,/}/d' "$f"
+          done
+          # Limpar cache corrompido
           rm -rf /Users/builder/.gradle/caches/jars-9/
-          rm -rf /Users/builder/.gradle/caches/modules-2/files-2.1/org.bouncycastle/
           cd android
           ./gradlew assembleDebug --no-daemon
     artifacts:
