@@ -110,7 +110,11 @@ workflows:
             mkdir -p android/app/src/main/res/mipmap-$size
             cp kiwufy/iconeki.png android/app/src/main/res/mipmap-$size/ic_launcher.png
             cp kiwufy/iconeki.png android/app/src/main/res/mipmap-$size/ic_launcher_round.png
+            cp kiwufy/iconeki.png android/app/src/main/res/mipmap-$size/ic_launcher_foreground.png
           done
+          # Remover adaptive icons que sobrepõem o ícone
+          find android/app/src/main/res -name "ic_launcher.xml" -delete
+          find android/app/src/main/res -name "ic_launcher_round.xml" -delete
       - name: Build APK
         script: |
           # Corrigir o build.gradle do capacitor-android
