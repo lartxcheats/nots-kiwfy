@@ -93,6 +93,8 @@ workflows:
     scripts:
       - name: Install dependencies
         script: npm install --legacy-peer-deps
+      - name: Install Capacitor Android
+        script: npm install @capacitor/android --legacy-peer-deps
       - name: Remove old Android folder
         script: rm -rf android
       - name: Add Android platform
