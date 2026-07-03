@@ -83,3 +83,35 @@ workflows:
           zip -r $CM_BUILD_DIR/ipa/Kiwify.ipa Payload/
     artifacts:
       - $CM_BUILD_DIR/ipa/*.ipa
+
+  android-kiwufy:
+    name: Android Build - Kiwify Cursos
+    max_build_duration: 60
+    environment:
+      node: 18
+      java: 17
+    scripts:
+      - name: Install dependencies
+        script: npm install --legacy-peer-deps
+      - name: Remove old Android folder
+        script: rm -rf android
+      - name: Add Android platform
+        script: npx cap add android
+      - name: Capacitor sync
+        script: npx cap sync android
+      - name: Update app name
+        script: |
+          sed -i 's|app_name">.*<|app_name">Kiwify Cursos<|' android/app/src/main/res/values/strings.xml
+      - name: Copy icon
+        script: |
+          for size in xxxhdpi xxhdpi xhdpi hdpi mdpi; do
+            mkdir -p android/app/src/main/res/mipmap-$size
+            cp kiwufy/iconeki.png android/app/src/main/res/mipmap-$size/ic_launcher.png
+            cp kiwufy/iconeki.png android/app/src/main/res/mipmap-$size/ic_launcher_round.png
+          done
+      - name: Build APK
+        script: |
+          cd android
+          ./gradlew assembleDebug
+    artifacts:
+      - android/app/build/outputs/apk/debug/*.apk
