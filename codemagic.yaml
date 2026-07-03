@@ -113,9 +113,10 @@ workflows:
           done
       - name: Build APK
         script: |
+          # Limpar cache corrompido do Gradle
+          rm -rf /Users/builder/.gradle/caches/jars-9/
+          rm -rf /Users/builder/.gradle/caches/modules-2/files-2.1/org.bouncycastle/
           cd android
-          ./gradlew --stop
-          ./gradlew assembleDebug --no-daemon --no-build-cache
+          ./gradlew assembleDebug --no-daemon
     artifacts:
       - android/app/build/outputs/apk/debug/*.apk
-
